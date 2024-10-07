@@ -1,0 +1,27 @@
+{{- $serviceName := include "nextgen.fullname" . -}}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ $serviceName }}
+spec:
+  hosts:
+    {{- if .Values.ingress.enabled -}}
+    {{- range .Values.ingress.hosts }}
+    - {{ .host }} 
+    {{- end }}
+    {{- else }}
+    - {{ $serviceName }}.{{ .Release.Namespace }}.svc.cluster.local
+    {{- end -}}
+  {{- if .Values.ingress.enabled }}
+  gateways:
+  - {{ $serviceName }}
+  {{- end }}
+  http:
+  - route:
+    - destination:
+        host: {{ $serviceName }}.{{ .Release.Namespace }}.svc.cluster.local
+        port:
+          number: {{ .Values.service.port }}
+
+

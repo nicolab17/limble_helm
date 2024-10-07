@@ -1,0 +1,9 @@
+{{- if .Values.destinationRule.enabled }}
+{{- $serviceName := include "nextgen.fullname" . -}}
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ $serviceName }}
+spec:
+{{ indent 2 .Values.destinationRule.spec }}
+{{ end -}}

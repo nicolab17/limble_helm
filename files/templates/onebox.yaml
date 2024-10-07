@@ -1,0 +1,105 @@
+{{- if .Values.onebox.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nextgen.fullname" . }}-onebox
+  labels:
+    {{- include "nextgen.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.onebox.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "nextgen.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.onebox.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Release.Namespace }}
+        service: {{ include "nextgen.fullname" . }}
+        version: {{ .Values.onebox.image.tag | default .Chart.AppVersion }}
+        configVersion: {{ .Values.onebox.configVersion | default .Chart.AppVersion | quote }}  
+        clusterName: {{ .Values.cluster.name }}
+        clusterRegion: {{ .Values.cluster.region }}
+        {{- include "nextgen.selectorLabels" . | nindent 8 }}
+        onebox: "True"
+        {{- with .Values.onebox.labels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}         
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nextgen.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}     
+      containers:
+        - name: {{ include "nextgen.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.onebox.image.repository }}:{{ .Values.onebox.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.onebox.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: {{ .Values.service.protocol }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.onebox.livenessProbe }}
+              port: http
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.onebox.readinessProbe }}
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: version
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['version']
+            - name: configVersion
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['configVersion']
+            - name: environment
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['environment']
+            - name: service
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['service']
+            - name: app
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app']
+            - name: onebox
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['onebox']
+            - name: clusterName
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['clusterName']
+            - name: clusterRegion
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['clusterRegion']
+            {{- toYaml .Values.onebox.env | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,9 @@
+{{- if .Values.authorizationPolicy.enabled }}
+{{- $serviceName := include "nextgen.fullname" . -}}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ $serviceName }}
+spec: 
+{{ indent 2 .Values.authorizationPolicy.spec }}
+{{ end -}}

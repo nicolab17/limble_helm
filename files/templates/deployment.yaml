@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nextgen.fullname" . }}
+  labels:
+    {{- include "nextgen.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.pod.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "nextgen.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.pod.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Release.Namespace }}
+        service: {{ include "nextgen.fullname" . }}
+        version: {{ .Values.pod.image.tag | default .Chart.AppVersion }}  
+        configVersion: {{ .Values.pod.configVersion | default .Chart.AppVersion | quote }}  
+        clusterName: {{ .Values.cluster.name }}  
+        clusterRegion: {{ .Values.cluster.region }}  
+        onebox: "False" 
+        {{- include "nextgen.selectorLabels" . | nindent 8 }}
+        {{- with .Values.pod.labels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}         
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nextgen.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}     
+      containers:
+        - name: {{ include "nextgen.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.pod.image.repository }}:{{ .Values.pod.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pod.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: {{ .Values.service.protocol }} 
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.pod.livenessProbe }}
+              port: http
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.pod.readinessProbe }}
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: version
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['version']
+            - name: configVersion
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['configVersion']
+            - name: environment
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['environment']
+            - name: service
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['service']
+            - name: app
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['app']
+            - name: onebox
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['onebox']  
+            - name: clusterName
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['clusterName']
+            - name: clusterRegion
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['clusterRegion']                                                                      
+            {{- toYaml .Values.pod.env | nindent 12 }}      
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

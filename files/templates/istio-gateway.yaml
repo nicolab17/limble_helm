@@ -1,0 +1,31 @@
+{{- if .Values.ingress.enabled }}
+{{- $serviceName := include "nextgen.fullname" . -}}
+{{- $servicePort := .Values.service.port -}}
+{{- $adminPort := .Values.service.adminPort -}}
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ $serviceName }}
+  labels:
+    app.kubernetes.io/name: {{ $serviceName }}
+spec:
+  selector:
+    istio: ingressgateway 
+  servers:
+  {{- range .Values.ingress.hosts }}
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    tls:
+      httpsRedirect: true
+    hosts:
+    - {{ .host }}
+  - port:
+      name: https
+      number: 443
+      protocol: HTTP
+    hosts:
+    - {{ .host }}
+  {{- end -}}
+{{- end -}}

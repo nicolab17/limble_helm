@@ -1,0 +1,39 @@
+{{ if and .Values.irsaRole.enabled .Values.serviceAccount.create -}}
+{{- $serviceName := include "nextgen.fullname" . }}
+{{- $name := default .Values.irsaRole.name $serviceName }}
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: ack-{{ $name }}-policy 
+spec:
+  policyDocument: {{- .Values.irsaRole.policyDocument | toYaml | indent 1 }}
+  name: ack-{{ $name }}-policy
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: ack-{{ $name }}-role
+spec:
+  assumeRolePolicyDocument: |
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Federated": "arn:aws:iam::{{ .Values.irsaRole.account }}:oidc-provider/oidc.eks.us-east-2.amazonaws.com/id/{{ .Values.irsaRole.oidcProvider }}"
+                },
+                "Action": "sts:AssumeRoleWithWebIdentity",
+                "Condition": {
+                    "StringEquals": {
+                        "oidc.eks.us-east-2.amazonaws.com/id/{{ .Values.irsaRole.oidcProvider }}:aud": "sts.amazonaws.com",
+                        "oidc.eks.us-east-2.amazonaws.com/id/{{ .Values.irsaRole.oidcProvider }}:sub": "system:serviceaccount:amazingapp:ack-{{ $name }}-policy"
+                    }
+                }
+            }
+        ]
+    }
+  name: ack-{{ $name }}-role
+  policies: 
+  - "arn:aws:iam::{{ .Values.irsaRole.account }}:policy/ack-{{ $name }}-policy"
+{{ end -}}
