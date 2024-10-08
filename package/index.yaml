@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  lab:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-10-08T16:46:59.225396673-05:00"
+    description: A Helm chart for Kubernetes
+    digest: 3fae09a1f1a8482316b942839d78af2ded482ab1f2bf6c692609615fbff5811f
+    name: lab
+    type: application
+    urls:
+    - lab-1.0.0.tgz
+    version: 1.0.0
+generated: "2024-10-08T16:46:59.224742393-05:00"
