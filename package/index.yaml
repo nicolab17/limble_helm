@@ -3,7 +3,17 @@ entries:
   lab:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2024-10-08T16:46:59.225396673-05:00"
+    created: "2024-10-13T11:19:56.401188498-05:00"
+    description: A Helm chart for Kubernetes
+    digest: e5a66ec96f089d5273cb1d25ca40f04bf49f3e14f93f53aa89a27f1c6723648f
+    name: lab
+    type: application
+    urls:
+    - lab-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-10-13T11:19:56.400614538-05:00"
     description: A Helm chart for Kubernetes
     digest: 3fae09a1f1a8482316b942839d78af2ded482ab1f2bf6c692609615fbff5811f
     name: lab
@@ -11,4 +21,4 @@ entries:
     urls:
     - lab-1.0.0.tgz
     version: 1.0.0
-generated: "2024-10-08T16:46:59.224742393-05:00"
+generated: "2024-10-13T11:19:56.399946431-05:00"

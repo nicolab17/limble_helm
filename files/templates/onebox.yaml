@@ -46,14 +46,18 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: {{ .Values.service.protocol }}
+          {{- if .Values.pod.livenessProbe.create -}}    
           livenessProbe:
             httpGet:
-              path: {{ .Values.onebox.livenessProbe }}
+              path: {{ .Values.pod.livenessProbe }}
               port: http
+          {{- end }}
+          {{- if .Values.pod.readinessProbe.create -}}
           readinessProbe:
             httpGet:
-              path: {{ .Values.onebox.readinessProbe }}
+              path: {{ .Values.pod.readinessProbe }}
               port: http
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
