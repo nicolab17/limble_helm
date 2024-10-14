@@ -37,7 +37,7 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}     
       containers:
-        - name: {{ include "nextgen.fullname" . }}
+        - name: {{ .Chart.Name }}-onebox
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.onebox.image.repository }}:{{ .Values.onebox.image.tag | default .Chart.AppVersion }}"
@@ -46,6 +46,14 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: {{ .Values.service.protocol }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.onebox.livenessProbe }}
+              port: http
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.onebox.readinessProbe }}
+              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
