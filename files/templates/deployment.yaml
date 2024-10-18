@@ -36,25 +36,39 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "nextgen.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}     
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+      {{- toYaml .Values.volumes | nindent 6 }}
       containers:
         - name: {{ include "nextgen.fullname" . }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.pod.image.repository }}:{{ .Values.pod.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pod.image.pullPolicy }}
+          volumeMounts:
+          {{- toYaml .Values.volumeMounts | nindent 10 }}        
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: {{ .Values.service.protocol }} 
           livenessProbe:
-            httpGet:
-              path: {{ .Values.pod.livenessProbe }}
-              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+            successThreshold: 1
+            httpGet: null
+            tcpSocket:
+              port: 80
           readinessProbe:
-            httpGet:
-              path: {{ .Values.pod.readinessProbe }}
-              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+            successThreshold: 1
+            httpGet: null
+            tcpSocket:
+              port: 80
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:

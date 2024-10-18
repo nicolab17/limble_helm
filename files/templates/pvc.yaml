@@ -4,7 +4,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ $serviceName }}
+  name: {{ .Values.pvc.name }}
   {{- with .Values.pvc.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
